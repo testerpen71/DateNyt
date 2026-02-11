@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dolco Bistro — Dinner Reservations</title>
+  <meta name="description" content="Reserve a table for dinner at Dolco Bistro. Simple and fast online bookings." />
+  <style>
+    :root {
+      --bg: #0f0f12;
+      --card: #17171c;
+      --text: #f5f5f7;
+      --muted: #b7b7c2;
+      --primary: #ff725e;
+      --primary-700: #e45f4c;
+      --accent: #23232a;
+      --border: #2a2a32;
+      --focus: #8ec5ff;
+      --success: #3ccf91;
+      --danger: #ff4d6d;
+    }
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+      line-height: 1.5;
+      scroll-behavior: smooth;
+    }
+
+    /* Header */
+    .site-header {
+      position: sticky;
+      top: 0;
+      backdrop-filter: saturate(120%) blur(8px);
+      background: color-mix(in srgb, var(--bg) 86%, transparent);
+      border-bottom: 1px solid var(--border);
+      z-index: 50;
+    }
+    .header-inner {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.75rem 1rem; max-width: 1000px; margin: 0 auto;
+    }
+    .brand { display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--text); font-weight: 700; }
+    .brand-mark { font-size: 1.25rem; }
+    .brand-text { letter-spacing: 0.2px; }
+
+    nav ul { list-style: none; display: flex; gap: 1rem; margin: 0; padding: 0; }
+    nav a { color: var(--muted); text-decoration: none; padding: 0.5rem 0.25rem; }
+    nav a:hover { color: var(--text); }
+
+    .menu-toggle { display: none; background: transparent; color: var(--text); border: 1px solid var(--border); padding: 0.35rem 0.6rem; border-radius: 8px; }
+
+    /* Layout */
+    .container { max-width: 1000px; margin: 0 auto; padding: 1rem; }
+    .section { padding: 3rem 0; }
+    .section-accent { background: var(--accent); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+
+    /* Hero */
+    .hero {
+      background: radial-gradient(1200px 400px at 20% -50%, #ff725e33, transparent),
+                  radial-gradient(800px 300px at 80% 0%, #8ec5ff22, transparent);
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-inner { padding: 4rem 1rem; text-align: center; }
+    .hero h1 { margin: 0 0 0.5rem; font-size: clamp(1.8rem, 3.2vw + 1rem, 3rem); }
+    .hero p { margin: 0 0 1.25rem; color: var(--muted); }
+    .btn { display: inline-block; border: 1px solid var(--border); color: var(--text); padding: 0.7rem 1rem; border-radius: 10px; text-decoration: none; cursor: pointer; background: var(--card); }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: var(--primary); border-color: var(--primary-700); color: #111; font-weight: 700; }
+    .btn-ghost { background: transparent; }
+
+    /* Form */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field-full { grid-column: 1 / -1; }
+    label { font-weight: 600; }
+    input, textarea {
+      width: 100%;
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.7rem 0.8rem;
+      outline: none;
+    }
+    input:focus, textarea:focus { border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in srgb, var(--focus) 30%, transparent); }
+    .error { color: var(--danger); min-height: 1.25rem; }
+    .muted { color: var(--muted); }
+    .actions { margin-top: 1rem; display: flex; gap: 0.75rem; }
+
+    .availability {
+      margin-top: 1rem;
+      padding: 1rem;
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      background: #1a1a20;
+    }
+    .availability.success { border-color: color-mix(in srgb, var(--success) 40%, var(--border)); }
+    .availability.error { border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); }
+
+    .confirmation {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      border: 1px solid color-mix(in srgb, var(--success) 40%, var(--border));
+      background: #10231b;
+      border-radius: 12px;
+    }
+
+    /* Footer */
+    .site-footer { border-top: 1px solid var(--border); }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem; max-width: 1000px; margin: 0 auto; }
+    .site-footer a { color: var(--muted); text-decoration: none; }
+    .site-footer a:hover { color: var(--text); }
+
+    .info-list { padding-left: 1rem; }
+    .info-list li { margin: 0.25rem 0; }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+      .grid { grid-template-columns: 1fr; }
+      nav ul { display: none; }
+      .menu-toggle { display: inline-block; }
+      nav[aria-expanded="true"] ul {
+        display: flex; flex-direction: column; position: absolute; right: 1rem; top: 3.2rem;
+        background: var(--card); border: 1px solid var(--border); padding: 0.75rem; border-radius: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="Dolco Bistro Home">
+        <span class="brand-mark" aria-hidden="true">🍽️</span>
+        <span class="brand-text">Dolco Bistro</span>
+      </a>
+      <nav aria-label="Primary" id="primaryNav" aria-expanded="false">
+        <ul>
+          <li><a href="#about">About</a></li>
+          <li><a href="#reserve">Reserve</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+        <button id="menuToggle" class="menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="primaryNav">
+          ☰
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container hero-inner">
+        <h1>Book Your Dinner Table</h1>
+        <p>Fresh, seasonal dishes and a warm atmosphere. We can’t wait to host you.</p>
+        <a href="#reserve" class="btn btn-primary">Reserve Now</a>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" class="section">
+      <div class="container">
+        <h2>About Dolco Bistro</h2>
+        <p>
+          Dolco Bistro offers a curated dinner menu, craft beverages, and friendly service.
+          Reservations are recommended, especially for weekends.
+        </p>
+        <ul class="info-list">
+          <li><strong>Dinner Hours:</strong> 17:00–22:00 (Tue–Sun)</li>
+          <li><strong>Location:</strong> 123 Main Road, Your City</li>
+          <li><strong>Phone:</strong> +27 00 000 0000</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Reservation Form -->
+    <section id="reserve" class="section section-accent">
+      <div class="container">
+        <h2>Make a Reservation</h2>
+        <p class="muted">Please fill in your details. All fields marked with * are required.</p>
+
+        <form id="reservationForm" novalidate>
+          <div class="grid">
+            <div class="field">
+              <label for="fullName">Full Name *</label>
+              <input type="text" id="fullName" name="fullName" placeholder="e.g., Thandi Nkosi" required />
+              <small class="error" id="fullNameError" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required />
+              <small class="error" id="emailError" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="phone">Phone *</label>
+              <input type="tel" id="phone" name="phone" placeholder="+27 72 123 4567" required />
+              <small class="error" id="phoneError" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="date">Date *</label>
+              <input type="date" id="date" name="date" required />
+              <small class="error" id="dateError" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="time">Time (17:00–22:00) *</label>
+              <input type="time" id="time" name="time" min="17:00" max="22:00" required />
+              <small class="error" id="timeError" aria-live="polite"></small>
+            </div>
+
+            <div class="field">
+              <label for="partySize">Party Size (1–10) *</label>
+              <input type="number" id="partySize" name="partySize" min="1" max="10" value="2" required />
+              <small class="error" id="partySizeError" aria-live="polite"></small>
+            </div>
+
+            <div class="field field-full">
+              <label for="specialRequests">Special Requests (optional)</label>
+              <textarea id="specialRequests" name="specialRequests" rows="3" placeholder="Allergies, high chair, anniversary, etc."></textarea>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" type="submit">Check Availability</button>
+            <button class="btn btn-ghost" type="reset">Clear</button>
+          </div>
+        </form>
+
+        <div id="availability" class="availability" role="status" aria-live="polite" hidden></div>
+
+        <div id="confirmation" class="confirmation" hidden>
+          <h3>Reservation Confirmed 🎉</h3>
+          <p id="confirmationText"></p>
+          <button class="btn" id="newReservationBtn" type="button">Make Another Reservation</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="section">
+      <div class="container">
+        <h2>Contact Us</h2>
+        <p>Questions or large party inquiries (10+)? We’re happy to help.</p>
+        <ul class="info-list">
+          <li><strong>Email:</strong> bookings@dolcobistro.example</li>
+          <li><strong>Phone:</strong> +27 00 000 0000</li>
+          <li><strong>Hours:</strong> Tue–Sun, 17:00–22:00</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p>&copy; <span id="year"></span> Dolco Bistro. All rights reserved.</p>
+      <nav aria-label="Footer">
+        <a href="#about">About</a> •
+        <a href="#reserve">Reserve</a> •
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    // Utility: pad to 2 digits
+    const pad2 = (n) => String(n).padStart(2, "0");
+
+    // Set current year in footer
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Mobile nav toggle
+    const menuToggle = document.getElementById("menuToggle");
+    const primaryNav = document.getElementById("primaryNav");
+    if (menuToggle && primaryNav) {
+      menuToggle.addEventListener("click", () => {
+        const expanded = primaryNav.getAttribute("aria-expanded") === "true";
+        primaryNav.setAttribute("aria-expanded", String(!expanded));
+        menuToggle.setAttribute("aria-expanded", String(!expanded));
+      });
+    }
+
+    // DOM references
+    const form = document.getElementById("reservationForm");
+    const availabilityBox = document.getElementById("availability");
+    const confirmationBox = document.getElementById("confirmation");
+    const confirmationText = document.getElementById("confirmationText");
+    const newReservationBtn = document.getElementById("newReservationBtn");
+
+    // Error fields
+    const errors = {
+      fullName: document.getElementById("fullNameError"),
+      email: document.getElementById("emailError"),
+      phone: document.getElementById("phoneError"),
+      date: document.getElementById("dateError"),
+      time: document.getElementById("timeError"),
+      partySize: document.getElementById("partySizeError"),
+    };
+
+    // Set minimum date to today
+    (function setMinDate() {
+      const dateInput = document.getElementById("date");
+      const today = new Date();
+      const min = `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`;
+      dateInput.min = min;
+    })();
+
+    // Simple client-side validation
+    function validate(formData) {
+      let valid = true;
+      // Clear old errors
+      Object.values(errors).forEach((el) => (el.textContent = ""));
+
+      const fullName = formData.get("fullName")?.trim();
+      const email = formData.get("email")?.trim();
+      const phone = formData.get("phone")?.trim();
+      const date = formData.get("date");
+      const time = formData.get("time");
+      const partySize = Number(formData.get("partySize"));
+
+      if (!fullName) { errors.fullName.textContent = "Please enter your full name."; valid = false; }
+      if (!email || !/^\S+@\S+\.\S+$/.test(email)) { errors.email.textContent = "Please enter a valid email."; valid = false; }
+      if (!phone || phone.replace(/\D/g, "").length < 7) { errors.phone.textContent = "Please enter a valid phone number."; valid = false; }
+      if (!date) { errors.date.textContent = "Please choose a date."; valid = false; }
+      if (!time) { errors.time.textContent = "Please choose a time."; valid = false; }
+      if (!(partySize >= 1 && partySize <= 10)) { errors.partySize.textContent = "Party size must be between 1 and 10."; valid = false; }
+
+      // Time window check (17:00–22:00)
+      if (time) {
+        const [h, m] = time.split(":").map(Number);
+        const minutes = h * 60 + m;
+        const minTime = 17 * 60; // 17:00
+        const maxTime = 22 * 60; // 22:00
+        if (minutes < minTime || minutes > maxTime) {
+          errors.time.textContent = "Please choose a time between 17:00 and 22:00.";
+          valid = false;
+        }
+      }
+
+      return valid;
+    }
+
+    // Mock availability check (client-side)
+    // - Deny if party size > 8 for Friday/Saturday peak hours (19:00–20:00)
+    // - Deny if 20 reservations already stored for the same slot (localStorage cap)
+    function mockAvailabilityCheck(date, time, partySize) {
+      const d = new Date(date + "T00:00:00");
+      const weekday = d.getDay(); // 0=Sun...6=Sat
+      const [h] = time.split(":").map(Number);
+      const isPeak = (h === 19 || h === 20) && (weekday === 5 || weekday === 6); // Fri/Sat
+      if (isPeak && partySize > 8) {
+        return { ok: false, reason: "Large groups are limited during peak hours (Fri/Sat 19:00–20:00)." };
+      }
+
+      // Simple slot capacity rule using localStorage
+      const key = `reservations_${date}_${time}`;
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      if (existing.length >= 20) {
+        return { ok: false, reason: "This time slot is full. Please choose another time." };
+      }
+
+      return { ok: true };
+    }
+
+    // Persist reservation (localStorage demo)
+    function saveReservation(payload) {
+      const key = `reservations_${payload.date}_${payload.time}`;
+      const existing = JSON.parse(localStorage.getItem(key) || "[]");
+      existing.push(payload);
+      localStorage.setItem(key, JSON.stringify(existing));
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      availabilityBox.hidden = true;
+      confirmationBox.hidden = true;
+      availabilityBox.classList.remove("success", "error");
+      availabilityBox.textContent = "";
+
+      const formData = new FormData(form);
+      if (!validate(formData)) {
+        availabilityBox.hidden = false;
+        availabilityBox.classList.add("error");
+        availabilityBox.textContent = "Please correct the highlighted fields.";
+        return;
+      }
+
+      const payload = {
+        fullName: formData.get("fullName").trim(),
+        email: formData.get("email").trim(),
+        phone: formData.get("phone").trim(),
+        date: formData.get("date"),
+        time: formData.get("time"),
+        partySize: Number(formData.get("partySize")),
+        specialRequests: formData.get("specialRequests")?.trim() || "",
+        createdAt: new Date().toISOString(),
+      };
+
+      // Simulate checking availability (e.g., API call)
+      const result = mockAvailabilityCheck(payload.date, payload.time, payload.partySize);
+
+      if (!result.ok) {
+        availabilityBox.hidden = false;
+        availabilityBox.classList.add("error");
+        availabilityBox.textContent = `Not available: ${result.reason}`;
+        return;
+      }
+
+      // Simulate success
+      saveReservation(payload);
+
+      // Show confirmation
+      confirmationText.textContent =
+        `Thanks, ${payload.fullName}! Your table for ${payload.partySize} is confirmed on ` +
+        `${payload.date} at ${payload.time}. A confirmation has been (hypothetically) sent to ${payload.email}.`;
+
+      confirmationBox.hidden = false;
+      availabilityBox.hidden = false;
+      availabilityBox.classList.add("success");
+      availabilityBox.textContent = "Great news — your selected time is available!";
+      form.reset();
+    });
+
+    // Start a new reservation
+    newReservationBtn.addEventListener("click", () => {
+      confirmationBox.hidden = true;
+      availabilityBox.hidden = true;
+      form.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  </script>
+</body>
+</html>
